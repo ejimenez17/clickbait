@@ -36,11 +36,9 @@ def print_response(response, length):
 def get_videos(response, length):
   videos = []
   for i in range(length):
-    # print response['items'][i]
     if not response['items'][i]['snippet']['title'] == 'Private video' or not response['items'][i]['snippet']['title'] == 'Deleted video':
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
-      # print myTitle
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']
       videos += [(myID, myTitle, myThumbnails)]
 
@@ -80,7 +78,6 @@ def playlists_list_by_channel_id(client, **kwargs):
     **kwargs
   ).execute()
 
-  # length = kwargs['maxResults']
   length = len(response['items'])
 
   # for playlist in list of playlists in response
@@ -126,15 +123,9 @@ if __name__ == '__main__':
       for line in f:
           clickbaitChannels.append(json.loads(line))
   
-  # print clickbaitChannels
-  # for myChannelId in clickbaitChannels:
-  #   print "channel ID: ", myChannelId
-  #   playlists_list_by_channel_id(client,
-  #     part='id,snippet,contentDetails',
-  #     channelId=myChannelId,
-  #     maxResults=5)
-  # UC_hoQDD6zKcIqpIYLsFbBeA
-  playlists_list_by_channel_id(client,
+  for myChannelId in clickbaitChannels:
+    # print "channel ID: ", myChannelId
+    playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
-      channelId="UC_hoQDD6zKcIqpIYLsFbBeA",
+      channelId=myChannelId,
       maxResults=5)
