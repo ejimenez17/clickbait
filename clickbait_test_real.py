@@ -2,6 +2,7 @@
 
 import os
 import json
+import csv
 
 import google.oauth2.credentials
 
@@ -34,14 +35,19 @@ def print_response(response, length):
     print response['items'][i]['snippet']['title']
 
 def get_videos(response, length):
+  csvfile = open("clickbaits.csv", "a")
   videos = []
   for i in range(length):
     if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
-      myThumbnails = response['items'][i]['snippet']['thumbnails']['default']
+      myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
       videos += [(myID, myTitle, myThumbnails)]
+      # write row to csvfile
+      vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
+      vidWriter.writerow([myID, myTitle, myThumbnails])
 
+  csvfile.close()
   return videos
 
 # Remove keyword arguments that are not set
