@@ -36,7 +36,7 @@ def print_response(response, length):
 def get_videos(response, length):
   videos = []
   for i in range(length):
-    if not response['items'][i]['snippet']['title'] == 'Private video' or not response['items'][i]['snippet']['title'] == 'Deleted video':
+    if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']
