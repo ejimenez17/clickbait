@@ -14,7 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
 CLIENT_SECRETS_FILE = "client_secret.json"
-CLICKBAIT_CHANNELS_FILE = "clickbait_channels.json"
+CHANNELS_FILE = "non_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
@@ -34,7 +34,7 @@ def print_response(response, length):
     print response['items'][i]['snippet']['title']
 
 def get_videos(response, length):
-  csvfile = open("clickbaits.csv", "a")
+  csvfile = open("non_clickbait.csv", "a")
   videos = []
   for i in range(length):
     if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
@@ -102,10 +102,10 @@ def playlist_items_list_by_playlist_id(client, **kwargs):
   response = client.playlistItems().list(
     **kwargs
   ).execute()
+  
 
   length = len(response['items'])
   videos = get_videos(response, length)
-  print "videos: ", videos
   return videos
 
 if __name__ == '__main__':
@@ -115,12 +115,12 @@ if __name__ == '__main__':
   client = get_authenticated_service()
 
   clickbaitChannels = []
-  with open(CLICKBAIT_CHANNELS_FILE) as f:
+  with open(CHANNELS_FILE) as f:
       for line in f:
           clickbaitChannels.append(json.loads(line))
   
   for myChannelId in clickbaitChannels:
-    # print "channel ID: ", myChannelId
+    print "channel ID: ", myChannelId
     playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
       channelId=myChannelId,
