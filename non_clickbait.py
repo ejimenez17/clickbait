@@ -3,6 +3,7 @@
 import os
 import json
 import csv
+import urllib
 
 import google.oauth2.credentials
 
@@ -33,6 +34,12 @@ def print_response(response, length):
     print response['items'][i]['id']
     print response['items'][i]['snippet']['title']
 
+def downloader(image_url, name):
+    file_name = name
+    full_file_name = file_name + '.jpg'
+    urllib.urlretrieve(image_url,full_file_name)
+    return full_file_name
+
 def get_videos(response, length):
   csvfile = open("non_clickbait.csv", "a")
   videos = []
@@ -41,6 +48,8 @@ def get_videos(response, length):
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
+      if not myTitle[0:10] == "Bundy 20/2" and not myTitle[0:10] == "React JS /":
+        downloader(myThumbnails, myTitle[0:10].encode('utf-8'))
       videos += [(myID, myTitle, myThumbnails)]
       # write row to csvfile
       vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)

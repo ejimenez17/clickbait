@@ -3,19 +3,7 @@
 import os
 import json
 import csv
-import urllib.request
-
-import urllib.request
-import random
-
-
-def downloader(image_url):
-    file_name = random.randrange(1,10000)
-    full_file_name = str(file_name) + '.jpg'
-    urllib.request.urlretrieve(image_url,full_file_name)
-
-
-downloader(url)
+import urllib
 
 import google.oauth2.credentials
 
@@ -46,10 +34,10 @@ def print_response(response, length):
     print response['items'][i]['id']
     print response['items'][i]['snippet']['title']
 
-def downloader(image_url, count):
-    file_name = count;
-    full_file_name = str(file_name) + '.jpg'
-    urllib.request.urlretrieve(image_url,full_file_name)
+def downloader(image_url, name):
+    file_name = name
+    full_file_name = file_name + '.jpg'
+    urllib.urlretrieve(image_url,full_file_name)
     return full_file_name
 
 def get_videos(response, length):
@@ -60,11 +48,11 @@ def get_videos(response, length):
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
-      #downloader(myThumbnails, i)
+      downloader(myThumbnails, myTitle[0:10])
       videos += [(myID, myTitle, myThumbnails)]
       # write row to csvfile
       vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
-      vidWriter.writerow([myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails.encode('utf-8')])
+      vidWriter.writerow([myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails])
 
   csvfile.close()
   return videos
@@ -133,6 +121,8 @@ if __name__ == '__main__':
   # running in production *do not* leave this option enabled.
   os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
   client = get_authenticated_service()
+
+  # print downloader("https://i.ytimg.com/vi/3nj_xq8nfxE/default.jpg", 1)
 
   clickbaitChannels = []
   with open(CLICKBAIT_CHANNELS_FILE) as f:
