@@ -3,6 +3,19 @@
 import os
 import json
 import csv
+import urllib.request
+
+import urllib.request
+import random
+
+
+def downloader(image_url):
+    file_name = random.randrange(1,10000)
+    full_file_name = str(file_name) + '.jpg'
+    urllib.request.urlretrieve(image_url,full_file_name)
+
+
+downloader(url)
 
 import google.oauth2.credentials
 
@@ -33,6 +46,12 @@ def print_response(response, length):
     print response['items'][i]['id']
     print response['items'][i]['snippet']['title']
 
+def downloader(image_url, count):
+    file_name = count;
+    full_file_name = str(file_name) + '.jpg'
+    urllib.request.urlretrieve(image_url,full_file_name)
+    return full_file_name
+
 def get_videos(response, length):
   csvfile = open("clickbaits.csv", "a")
   videos = []
@@ -41,6 +60,7 @@ def get_videos(response, length):
       myID = response['items'][i]['id']
       myTitle = response['items'][i]['snippet']['title']
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
+      #downloader(myThumbnails, i)
       videos += [(myID, myTitle, myThumbnails)]
       # write row to csvfile
       vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
@@ -62,7 +82,7 @@ def channels_list_by_username(service, **kwargs):
   results = service.channels().list(
     **kwargs
   ).execute()
-  
+
   print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
        (results['items'][0]['id'],
         results['items'][0]['snippet']['title'],
@@ -118,7 +138,7 @@ if __name__ == '__main__':
   with open(CLICKBAIT_CHANNELS_FILE) as f:
       for line in f:
           clickbaitChannels.append(json.loads(line))
-  
+
   for myChannelId in clickbaitChannels:
     # print "channel ID: ", myChannelId
     playlists_list_by_channel_id(client,
