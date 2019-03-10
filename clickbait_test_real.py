@@ -15,7 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
 CLIENT_SECRETS_FILE = "client_secret.json"
-CLICKBAIT_CHANNELS_FILE = "clickbait_channels.json"
+CLICKBAIT_CHANNELS_FILE = "more_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
@@ -40,22 +40,51 @@ def downloader(image_url, name):
     urllib.urlretrieve(image_url,full_file_name)
     return full_file_name
 
-def get_videos(response, length):
+def get_videos(response, length): #if i >= 3
   csvfile = open("clickbaits.csv", "a")
   videos = []
   for i in range(length):
     if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
       myID = response['items'][i]['id']
+      myChannelId = response['items'][i]['snippet']['channelId']
+      # channelData = get_channel_data(client,
+      #   part='snippet,contentDetails,statistics',
+      #   id=myChannelId)
+
       myTitle = response['items'][i]['snippet']['title']
       myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
-      downloader(myThumbnails, myTitle[0:10])
+      if myTitle.find('/') == -1:
+        downloader(myThumbnails, myTitle[0:10])
       videos += [(myID, myTitle, myThumbnails)]
+
+      # videoDislikes = response['items'][i]['statistics']['dislikeCount']
+      # videoLikes = response['items'][i]['statistics']['likeCount']
+      # videoViews = response['items'][i]['statistics']['viewCount']
+
       # write row to csvfile
-      vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
-      vidWriter.writerow([myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails])
+      # vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
+      # vidWriter.writerow([channelId.encode('utf-8'), channelData[1].encode('utf-8'), channelData[2].encode('utf-8'), channelData[3].encode('utf-8'),\
+      #   channelData[4].encode('utf-8'), myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails, \
+      #     videoDislikes.encode('utf-8'), videoLikes.encode('utf-8'), videoViews.encode('utf-8')])
 
   csvfile.close()
   return videos
+
+def get_channel_data(client, **kwargs):
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.channels().list(
+    **kwargs
+  ).execute()
+
+  myChannelId = response['items'][0]['id']
+  myChannelName = response['items'][0]['snippet']['title']
+  myChannelSubs = response['items'][0]['statistics']['subscriberCount']
+  myChannelVidCount = response['items'][0]['statistics']['videoCount']
+  myChannelViews = response['items'][0]['statistics']['viewCount']
+
+  channelData = [myChannelId, myChannelName, myChannelSubs, myChannelVidCount, myChannelViews]
+  return channelData
 
 # Remove keyword arguments that are not set
 def remove_empty_kwargs(**kwargs):
@@ -97,7 +126,7 @@ def playlists_list_by_channel_id(client, **kwargs):
   for i in range(length):
     if not len(response['items'][i]) == 0:
       myPlaylistId = response['items'][i]['id']
-      numVids = 3
+      numVids = 40
       playlist_items_list_by_playlist_id(client,
         part='snippet',
         maxResults=numVids,
@@ -134,4 +163,4 @@ if __name__ == '__main__':
     playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
       channelId=myChannelId,
-      maxResults=5)
+      maxResults=25)
