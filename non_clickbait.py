@@ -41,23 +41,62 @@ def downloader(image_url, name):
     return full_file_name
 
 def get_videos(response, length):
-  csvfile = open("non_clickbait.csv", "a")
-  videos = []
-  for i in range(length):
-    if i >= 3:
+  with open("non_clickbait.csv", "a") as csvfile:
+    for i in range(length):
       if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
-        myID = response['items'][i]['id']
-        myTitle = response['items'][i]['snippet']['title']
-        myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
-        if myTitle.find('/') == -1:
-          downloader(myThumbnails, myTitle[0:10].encode('utf-8'))
-        videos += [(myID, myTitle, myThumbnails)]
+        videoId = response['items'][i]['contentDetails']['videoId']
+        video = videos_list_by_id(client,
+          part='snippet,contentDetails,statistics',
+          id=videoId)
+
+        channelId = response['items'][i]['snippet']['channelId']
+        channelData = get_channel_data(client,
+          part='snippet,contentDetails,statistics',
+          id=myChannelId)
+
+        myTitle = video['items'][0]['snippet']['title']
+        print myTitle
+        myThumbnails = video['items'][0]['snippet']['thumbnails']['default']['url']
+        # if myTitle.find('/') == -1:
+        #   downloader(myThumbnails, myTitle[0:10])
+
+        videoDislikes = video['items'][0]['statistics']['dislikeCount']
+        videoLikes = video['items'][0]['statistics']['likeCount']
+        videoViews = video['items'][0]['statistics']['viewCount']
+        videoComments = video['items'][0]['statistics']['commentCount']
+
         # write row to csvfile
         vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
-        vidWriter.writerow([myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails.encode('utf-8')])
+        vidWriter.writerow([channelId.encode('utf-8'), channelData[1].encode('utf-8'), channelData[2].encode('utf-8'), channelData[3].encode('utf-8'),\
+          channelData[4].encode('utf-8'), videoComments.encode('utf-8'), videoDislikes.encode('utf-8'), videoId.encode('utf-8'), \
+          videoLikes.encode('utf-8'), myTitle.encode('utf-8'), videoViews.encode('utf-8')])
 
   csvfile.close()
-  return videos
+
+def get_channel_data(client, **kwargs):
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.channels().list(
+    **kwargs
+  ).execute()
+
+  myChannelId = response['items'][0]['id']
+  myChannelName = response['items'][0]['snippet']['title']
+  myChannelSubs = response['items'][0]['statistics']['subscriberCount']
+  myChannelVidCount = response['items'][0]['statistics']['videoCount']
+  myChannelViews = response['items'][0]['statistics']['viewCount']
+
+  channelData = [myChannelId, myChannelName, myChannelSubs, myChannelVidCount, myChannelViews]
+  return channelData
+
+def videos_list_by_id(client, **kwargs):
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.videos().list(
+    **kwargs
+  ).execute()
+
+  return response
 
 # Remove keyword arguments that are not set
 def remove_empty_kwargs(**kwargs):
@@ -99,9 +138,9 @@ def playlists_list_by_channel_id(client, **kwargs):
   for i in range(length):
     if not len(response['items'][i]) == 0:
       myPlaylistId = response['items'][i]['id']
-      numVids = 50
+      numVids = 10
       playlist_items_list_by_playlist_id(client,
-        part='snippet',
+        part='snippet,contentDetails',
         maxResults=numVids,
         playlistId = myPlaylistId)
 
@@ -115,8 +154,7 @@ def playlist_items_list_by_playlist_id(client, **kwargs):
   
 
   length = len(response['items'])
-  videos = get_videos(response, length)
-  return videos
+  get_videos(response, length)
 
 if __name__ == '__main__':
   # When running locally, disable OAuthlib's HTTPs verification. When
@@ -125,13 +163,15 @@ if __name__ == '__main__':
   client = get_authenticated_service()
 
   clickbaitChannels = []
+  count = 1
   with open(CHANNELS_FILE) as f:
       for line in f:
+        if count > 5:
           clickbaitChannels.append(json.loads(line))
+        count += 1
   
   for myChannelId in clickbaitChannels:
-    print "channel ID: ", myChannelId
     playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
       channelId=myChannelId,
-      maxResults=50)
+      maxResults=10)
