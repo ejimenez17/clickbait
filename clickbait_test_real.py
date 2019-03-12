@@ -40,35 +40,38 @@ def downloader(image_url, name):
     urllib.urlretrieve(image_url,full_file_name)
     return full_file_name
 
-def get_videos(response, length): #if i >= 3
+def get_videos(response, length):
   csvfile = open("clickbaits.csv", "a")
-  videos = []
   for i in range(length):
     if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
-      myID = response['items'][i]['id']
-      myChannelId = response['items'][i]['snippet']['channelId']
-      # channelData = get_channel_data(client,
-      #   part='snippet,contentDetails,statistics',
-      #   id=myChannelId)
+      videoId = response['items'][i]['contentDetails']['videoId']
+      video = videos_list_by_id(client,
+        part='snippet,contentDetails,statistics',
+        id=videoId)
 
-      myTitle = response['items'][i]['snippet']['title']
-      myThumbnails = response['items'][i]['snippet']['thumbnails']['default']['url']
-      if myTitle.find('/') == -1:
-        downloader(myThumbnails, myTitle[0:10])
-      videos += [(myID, myTitle, myThumbnails)]
+      # myID = response['items'][i]['id']
+      channelId = response['items'][i]['snippet']['channelId']
+      channelData = get_channel_data(client,
+        part='snippet,contentDetails,statistics',
+        id=myChannelId)
 
-      # videoDislikes = response['items'][i]['statistics']['dislikeCount']
-      # videoLikes = response['items'][i]['statistics']['likeCount']
-      # videoViews = response['items'][i]['statistics']['viewCount']
+      myTitle = video['items'][0]['snippet']['title']
+      myThumbnails = video['items'][0]['snippet']['thumbnails']['default']['url']
+      # if myTitle.find('/') == -1:
+      #   downloader(myThumbnails, myTitle[0:10])
+
+      videoDislikes = video['items'][0]['statistics']['dislikeCount']
+      videoLikes = video['items'][0]['statistics']['likeCount']
+      videoViews = video['items'][0]['statistics']['viewCount']
+      videoComments = video['items'][0]['statistics']['commentCount']
 
       # write row to csvfile
-      # vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
-      # vidWriter.writerow([channelId.encode('utf-8'), channelData[1].encode('utf-8'), channelData[2].encode('utf-8'), channelData[3].encode('utf-8'),\
-      #   channelData[4].encode('utf-8'), myID.encode('utf-8'), myTitle.encode('utf-8'), myThumbnails, \
-      #     videoDislikes.encode('utf-8'), videoLikes.encode('utf-8'), videoViews.encode('utf-8')])
+      vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
+      vidWriter.writerow([channelId.encode('utf-8'), channelData[1].encode('utf-8'), channelData[2].encode('utf-8'), channelData[3].encode('utf-8'),\
+        channelData[4].encode('utf-8'), videoComments.encode('utf-8'), videoDislikes.encode('utf-8'), videoId.encode('utf-8'), \
+        videoLikes.encode('utf-8'), myTitle.encode('utf-8'), videoViews.encode('utf-8')])
 
   csvfile.close()
-  return videos
 
 def get_channel_data(client, **kwargs):
   kwargs = remove_empty_kwargs(**kwargs)
@@ -85,6 +88,15 @@ def get_channel_data(client, **kwargs):
 
   channelData = [myChannelId, myChannelName, myChannelSubs, myChannelVidCount, myChannelViews]
   return channelData
+
+def videos_list_by_id(client, **kwargs):
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.videos().list(
+    **kwargs
+  ).execute()
+
+  return response
 
 # Remove keyword arguments that are not set
 def remove_empty_kwargs(**kwargs):
@@ -126,9 +138,9 @@ def playlists_list_by_channel_id(client, **kwargs):
   for i in range(length):
     if not len(response['items'][i]) == 0:
       myPlaylistId = response['items'][i]['id']
-      numVids = 40
+      numVids = 10
       playlist_items_list_by_playlist_id(client,
-        part='snippet',
+        part='snippet,contentDetails',
         maxResults=numVids,
         playlistId = myPlaylistId)
 
@@ -141,9 +153,7 @@ def playlist_items_list_by_playlist_id(client, **kwargs):
   ).execute()
 
   length = len(response['items'])
-  videos = get_videos(response, length)
-  print "videos: ", videos
-  return videos
+  get_videos(response, length)
 
 if __name__ == '__main__':
   # When running locally, disable OAuthlib's HTTPs verification. When
@@ -163,4 +173,4 @@ if __name__ == '__main__':
     playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
       channelId=myChannelId,
-      maxResults=25)
+      maxResults=10)
