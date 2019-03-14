@@ -166,7 +166,7 @@ if __name__ == '__main__':
   count = 1
   with open(CHANNELS_FILE) as f:
       for line in f:
-        if count > 17:
+        if count > 20:
           clickbaitChannels.append(json.loads(line))
         count += 1
   
