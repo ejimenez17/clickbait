@@ -177,5 +177,5 @@ if __name__ == '__main__':
   #     maxResults=10)
   playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
-      channelId="UCOJcoPZl6St1jPXmldHVh4Q",
+      channelId="UC9ISPZsMaBi5mutsgX6LC1g",
       maxResults=10)
