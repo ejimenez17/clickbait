@@ -14,7 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
-CLIENT_SECRETS_FILE = "client_secret.json"
+CLIENT_SECRETS_FILE = "client_secret_2.json"
 CHANNELS_FILE = "non_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
@@ -52,7 +52,7 @@ def get_videos(response, length):
         channelId = response['items'][i]['snippet']['channelId']
         channelData = get_channel_data(client,
           part='snippet,contentDetails,statistics',
-          id=myChannelId)
+          id=channelId)
 
         myTitle = video['items'][0]['snippet']['title']
         print myTitle
@@ -166,12 +166,16 @@ if __name__ == '__main__':
   count = 1
   with open(CHANNELS_FILE) as f:
       for line in f:
-        if count > 5:
+        if count > 17:
           clickbaitChannels.append(json.loads(line))
         count += 1
   
-  for myChannelId in clickbaitChannels:
-    playlists_list_by_channel_id(client,
+  # for myChannelId in clickbaitChannels:
+  #   playlists_list_by_channel_id(client,
+  #     part='id,snippet,contentDetails',
+  #     channelId=myChannelId,
+  #     maxResults=10)
+  playlists_list_by_channel_id(client,
       part='id,snippet,contentDetails',
-      channelId=myChannelId,
+      channelId="UCOJcoPZl6St1jPXmldHVh4Q",
       maxResults=10)
