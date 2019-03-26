@@ -14,7 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
-CLIENT_SECRETS_FILE = "client_secret_3.json"
+CLIENT_SECRETS_FILE = "client_secret.json"
 CHANNELS_FILE = "non_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
@@ -56,7 +56,7 @@ def get_videos(response, length):
 
         myTitle = video['items'][0]['snippet']['title']
         print myTitle
-        myThumbnails = video['items'][0]['snippet']['thumbnails']['default']['url']
+        myThumbnail = video['items'][0]['snippet']['thumbnails']['default']['url']
         # if myTitle.find('/') == -1:
         #   downloader(myThumbnails, myTitle[0:10])
 
@@ -69,7 +69,7 @@ def get_videos(response, length):
         vidWriter = csv.writer(csvfile, delimiter=",", quoting=csv.QUOTE_MINIMAL)
         vidWriter.writerow([channelId.encode('utf-8'), channelData[1].encode('utf-8'), channelData[2].encode('utf-8'), channelData[3].encode('utf-8'),\
           channelData[4].encode('utf-8'), videoComments.encode('utf-8'), videoDislikes.encode('utf-8'), videoId.encode('utf-8'), \
-          videoLikes.encode('utf-8'), myTitle.encode('utf-8'), videoViews.encode('utf-8')])
+          videoLikes.encode('utf-8'), myTitle.encode('utf-8'), videoViews.encode('utf-8'), myThumbnail.encode('utf-8')])
 
   csvfile.close()
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
   count = 1
   with open(CHANNELS_FILE) as f:
       for line in f:
-        if count > 11:
+        if count > 25:
           clickbaitChannels.append(json.loads(line))
         count += 1
   
