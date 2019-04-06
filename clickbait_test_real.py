@@ -40,7 +40,60 @@ def downloader(image_url, name):
     urllib.urlretrieve(image_url,full_file_name)
     return full_file_name
 
+def videos_list_by_id(client, **kwargs):
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.videos().list(
+    **kwargs
+  ).execute()
+
+  return response
+
+def get_video_id(path):
+  """
+  Get video id from a youtube URL
+  For now, only of the form https://www.youtube.com/watch?v=VIDEOID
+  """
+  idIndex = path.find('=') + 1
+  videoId = path[idIndex:]
+  return videoId
+
+def get_single_video(client, **kwargs):
+  """
+  Get video and channel data for a SINGLE video
+  """
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.videos().list(
+    **kwargs
+  ).execute()
+
+  if not response['items'][0]['snippet']['title'] == 'Private video' \
+    and not response['items'][0]['snippet']['title'] == 'Deleted video':
+    videoId = response['items'][0]['id']
+
+    channelId = response['items'][0]['snippet']['channelId']
+    channelData = get_channel_data(client,
+      part='snippet,contentDetails,statistics',
+      id=channelId)
+
+    myTitle = response['items'][0]['snippet']['title']
+    myThumbnail = response['items'][0]['snippet']['thumbnails']['default']['url']
+
+    videoDislikes = response['items'][0]['statistics']['dislikeCount']
+    videoLikes = response['items'][0]['statistics']['likeCount']
+    videoViews = response['items'][0]['statistics']['viewCount']
+    videoComments = response['items'][0]['statistics']['commentCount']
+
+    print videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews
+
 def get_videos(response, length):
+  """
+  Get video dislikes, likes, views, comment count, title, and thumbnail URL
+  from a video ID (as well as info from the video's channel as detailed in 
+  get_channel_data())
+  Also adds rows to clickbaits.csv to store the data gathered
+  """
   csvfile = open("clickbaits.csv", "a")
   for i in range(length):
     if not response['items'][i]['snippet']['title'] == 'Private video' and not response['items'][i]['snippet']['title'] == 'Deleted video':
@@ -53,7 +106,7 @@ def get_videos(response, length):
       channelId = response['items'][i]['snippet']['channelId']
       channelData = get_channel_data(client,
         part='snippet,contentDetails,statistics',
-        id=myChannelId)
+        id=channelId)
 
       myTitle = video['items'][0]['snippet']['title']
       myThumbnail = video['items'][0]['snippet']['thumbnails']['default']['url']
@@ -74,6 +127,10 @@ def get_videos(response, length):
   csvfile.close()
 
 def get_channel_data(client, **kwargs):
+  """
+  Get channel name, # of subscribers, video count, 
+  and view count from a channel ID
+  """
   kwargs = remove_empty_kwargs(**kwargs)
 
   response = client.channels().list(
@@ -89,15 +146,6 @@ def get_channel_data(client, **kwargs):
   channelData = [myChannelId, myChannelName, myChannelSubs, myChannelVidCount, myChannelViews]
   return channelData
 
-def videos_list_by_id(client, **kwargs):
-  kwargs = remove_empty_kwargs(**kwargs)
-
-  response = client.videos().list(
-    **kwargs
-  ).execute()
-
-  return response
-
 # Remove keyword arguments that are not set
 def remove_empty_kwargs(**kwargs):
   good_kwargs = {}
@@ -107,25 +155,11 @@ def remove_empty_kwargs(**kwargs):
         good_kwargs[key] = value
   return good_kwargs
 
-def channels_list_by_username(service, **kwargs):
-  results = service.channels().list(
-    **kwargs
-  ).execute()
-
-  print('This channel\'s ID is %s. Its title is %s, and it has %s views.' %
-       (results['items'][0]['id'],
-        results['items'][0]['snippet']['title'],
-        results['items'][0]['statistics']['viewCount']))
-
-def videos_list_by_channel_id(service, **kwargs):
-    results = service.videos().list(
-        **kwargs
-    ).execute()
-
-    print("This Video is %s." %
-        (results['items'][0]['snippet']['title']))
-
 def playlists_list_by_channel_id(client, **kwargs):
+  """
+  get playlist IDs from a channel by inputting a
+  channel ID
+  """
   kwargs = remove_empty_kwargs(**kwargs)
 
   response = client.playlists().list(
@@ -145,6 +179,9 @@ def playlists_list_by_channel_id(client, **kwargs):
         playlistId = myPlaylistId)
 
 def playlist_items_list_by_playlist_id(client, **kwargs):
+  """
+  Get videos in a playlist by inputting playlist id
+  """
   # See full sample for function
   kwargs = remove_empty_kwargs(**kwargs)
 
@@ -158,21 +195,25 @@ def playlist_items_list_by_playlist_id(client, **kwargs):
 if __name__ == '__main__':
   # When running locally, disable OAuthlib's HTTPs verification. When
   # running in production *do not* leave this option enabled.
-  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+  # os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
   client = get_authenticated_service()
 
-  # print downloader("https://i.ytimg.com/vi/3nj_xq8nfxE/default.jpg", 1)
+  # clickbaitChannels = []
+  # count = 1
+  # with open(CLICKBAIT_CHANNELS_FILE) as f:
+  #     for line in f:
+  #         if count > 10:
+  #           clickbaitChannels.append(json.loads(line))
+  #         count += 1
 
-  clickbaitChannels = []
-  count = 1
-  with open(CLICKBAIT_CHANNELS_FILE) as f:
-      for line in f:
-          if count > 10:
-            clickbaitChannels.append(json.loads(line))
-          count += 1
+  # for myChannelId in clickbaitChannels:
+  #   playlists_list_by_channel_id(client,
+  #     part='id,snippet,contentDetails',
+  #     channelId=myChannelId,
+  #     maxResults=10)
 
-  for myChannelId in clickbaitChannels:
-    playlists_list_by_channel_id(client,
-      part='id,snippet,contentDetails',
-      channelId=myChannelId,
-      maxResults=10)
+  vidId = get_video_id("https://www.youtube.com/watch?v=p_4coiRG_BI")
+  get_single_video(client,
+    part='snippet,contentDetails,statistics',
+    maxResults=1,
+    id=vidId)
