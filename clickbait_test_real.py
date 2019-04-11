@@ -14,7 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
-CLIENT_SECRETS_FILE = "client_secret_3.json"
+CLIENT_SECRETS_FILE = "client_secret_webapp.json"
 CLICKBAIT_CHANNELS_FILE = "more_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
@@ -28,11 +28,11 @@ def get_authenticated_service():
   credentials = flow.run_console()
   return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 
-def print_response(response, length):
-  for i in range(length):
-    print "\n"
-    print response['items'][i]['id']
-    print response['items'][i]['snippet']['title']
+# def print_response(response, length):
+#   for i in range(length):
+#     print "\n"
+#     print response['items'][i]['id']
+#     print response['items'][i]['snippet']['title']
 
 def downloader(image_url, name):
     file_name = name
@@ -85,7 +85,7 @@ def get_single_video(client, **kwargs):
     videoViews = response['items'][0]['statistics']['viewCount']
     videoComments = response['items'][0]['statistics']['commentCount']
 
-    print videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews
+    print(videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews)
 
 def get_videos(response, length):
   """

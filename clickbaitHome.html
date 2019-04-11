@@ -20,13 +20,54 @@
 
 <!---<a href = "https://www.youtube.com">YouTube Link</a>--->
 <p style="color:gray">
-  <textarea style="width:60%;height:25px;background-color:#f2f2f2;color:#bbbbbb;
+  <textarea id="urlBox" style="width:60%;height:25px;background-color:#f2f2f2;color:#bbbbbb;
     border:none;padding:2%;font:18px/24px Arial;">
     Insert Link Here</textarea>
-    <button style = "background-color:red; color:white; padding:5px; font-size:18px;
+    <button onclick="apiRequest()" style = "background-color:red; color:white; padding:5px; font-size:18px;
       padding:8px; border:none"> Analyze! </button>
 </p>
 
+<!-- <p id="demo"></p> -->
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+      // makeRequest("/api/v1/greeting", { name: "Radon" })
+
+      // pass user-inputted url as string as data
+     function apiRequest() {
+       console.log("Making request ...");
+       var userUrl = document.getElementById("urlBox").value;
+       $.ajax({
+         // Where are we sending the data?
+         method: "POST",
+         // url to send the request to
+         url: "/api/v1/classify",
+         // What is the data?
+         contentType: "application/json",
+         data: JSON.stringify(userUrl),
+        //  data: {myUrl: userUrl},
+         // What do we do with the response?
+         dataType: "json",
+         success: data => {
+           console.log("Got the data!");
+           console.log(data);
+           // send data to backend
+         },
+         error: data => {
+           console.error("There was an error!");
+           console.error(data);
+           console.log(userUrl);
+         }
+       })
+      }
+
+      
+      // function apiRequest() {
+      //   var userUrl = document.getElementById("urlBox").value;
+      //   stringUrl = JSON.stringify(userUrl);
+      //   console.log(stringUrl);
+      // }
+    </script>
 
 </body>
 </html>
