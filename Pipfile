@@ -7,6 +7,17 @@ verify_ssl = true
 
 [packages]
 flask = "*"
+six = "*"
+cachetools = "*"
+pyasn1 = "*"
+pyasn1-modules = "*"
+rsa = "*"
+httplib2 = "*"
+email-feedparser = "*"
+httplib = "*"
+iri2uri = "*"
+google-auth-oauthlib = "*"
+oauth2client = "*"
 
 [requires]
 python_version = "3.7"

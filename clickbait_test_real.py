@@ -11,10 +11,14 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from oauth2client import client # Added
+from oauth2client import tools # Added
+from oauth2client.file import Storage # Added
+
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
-CLIENT_SECRETS_FILE = "client_secret_webapp.json"
+CLIENT_SECRETS_FILE = "client_secret_3.json"
 CLICKBAIT_CHANNELS_FILE = "more_clickbait.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
@@ -23,10 +27,22 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
+# def get_authenticated_service():
+#   flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
+#   credentials = flow.run_console()
+#   return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 def get_authenticated_service():
+  # credential_path = os.path.join('./', 'credential_sample.json')
+  # store = Storage(credential_path)
+  # credentials = store.get()
+  # if not credentials or credentials.invalid:
+  #   print("!")
+  #   flow = client.flow_from_clientsecrets(CLIENT_SECRETS_FILE, SCOPES)
+  #   credentials = tools.run_flow(flow, store)
+
   flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
   credentials = flow.run_console()
-  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
+  return build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
 
 # def print_response(response, length):
 #   for i in range(length):
@@ -85,7 +101,9 @@ def get_single_video(client, **kwargs):
     videoViews = response['items'][0]['statistics']['viewCount']
     videoComments = response['items'][0]['statistics']['commentCount']
 
-    print(videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews)
+    # print(videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews)
+    return (videoId, channelId, channelData, myTitle, myThumbnail, videoComments, videoDislikes, videoLikes, videoViews)
+
 
 def get_videos(response, length):
   """

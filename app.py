@@ -1,5 +1,7 @@
 import flask
 
+import clickbait_test_real
+
 app = flask.Flask(__name__)
 
 # home page for clickbait: have user input bar
@@ -11,15 +13,12 @@ def hello_route():
 @app.route("/api/v1/classify", methods=["POST"])
 def classify_api():
     request = flask.request.get_json(silent=True)
-    # requestDict = {userUrl: request}
     print(request)
     print(type(request))
-    if isinstance(request, dict):
-        response = {
-            "your url: " + request.get(userUrl)
-        }
-    else:
-        response = {
-            "error": "Bad input"
-        }
-    return flask.jsonify(response)
+    # call backend methods ???
+    client = clickbait_test_real.get_authenticated_service()
+    videoId = clickbait_test_real.get_video_id(request)
+    videoData = clickbait_test_real.get_single_video(client)
+    print("YEET")
+    #return prediction from backend
+    return flask.jsonify(request)
